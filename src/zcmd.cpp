@@ -15,6 +15,7 @@ int main(int, char*[]) {
             if (engine.ready() == "exit") {
                 break;
             }
+            engine.print("OK");
         }
     }
     return 0;

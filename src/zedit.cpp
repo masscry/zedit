@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cctype>
+#include <string>
 #include <utility>
 
 namespace zedit {
@@ -49,28 +50,46 @@ const std::string& Engine::ready() const throw() {
 }
 
 Engine::Status Engine::process_input() {
-    auto cur_line = current();
-    auto cur_pos = cursor_pos();
+    auto user_text = _user_text.str();
+    if (!user_text.empty()) {
+        _terminal->move_cursor(0);
+        _terminal->clear_line();
+        _terminal->print(user_text);
+        _user_text.str(std::string());
+        _terminal->scroll_line();
+    }
 
-    _terminal->clear();
+    auto cur_line = current();
+
     _terminal->move_cursor(0);
+    _terminal->clear_line();
     _terminal->print(cur_line);
-    _terminal->move_cursor(cur_pos);
 
     auto smb = _terminal->get();
     auto finish_terminal = make_deferred([this](){
         _terminal->finish();
     });
 
+    Engine::Status status = Engine::Status::WAIT;
     switch(smb.type) {
     case Event::KEY:
-        return handle_char(smb.data);
+        status = handle_char(smb.data);
+        break;
     case Event::SPECIAL:
-        return handle_special(static_cast<SpecialKey>(smb.data));
+        status = handle_special(static_cast<SpecialKey>(smb.data));
+        break;
     default:
         assert(0);
         throw Error("Unknown event type");
     }
+    if (status == Engine::Status::NEW_INPUT) {
+        _terminal->scroll_line();
+    }
+    return status;
+}
+
+void Engine::print(const std::string& text) {
+    _user_text << text;
 }
 
 std::string Engine::current() const {

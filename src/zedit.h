@@ -2,6 +2,7 @@
 /// \author masscry
 
 #pragma once
+#include <sstream>
 #ifndef ZEDIT_HEADER
 #define ZEDIT_HEADER
 
@@ -56,13 +57,16 @@ public:
     virtual Event get() = 0;
 
     /// \brief Clear terminal.
-    virtual void clear() = 0;
+    virtual void clear_line() = 0;
 
     /// \brief Print given text at cursor posiiton
     virtual void print(const std::string&) = 0;
 
     /// \brief Move cursor to given position
     virtual void move_cursor(int) = 0;
+
+    /// \brief Scroll line up
+    virtual void scroll_line() = 0;
 
     /// \brief Do some action at end of read-write loop.
     virtual void finish() = 0;
@@ -104,6 +108,8 @@ public:
     /// 
     Status process_input();
 
+    void print(const std::string& text);
+
 private:
 
     std::string current() const;
@@ -121,6 +127,7 @@ private:
     std::string _welcome;
     std::string _ready;
     std::string _edit;
+    std::stringstream _user_text;
     std::vector<std::string> _history;
     std::size_t _cursor_pos;
     std::size_t _history_pos;

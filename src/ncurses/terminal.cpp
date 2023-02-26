@@ -15,6 +15,12 @@ public:
     Event get() override;
     void clear_line() override;
     void print(const std::string& str) override;
+    void print(
+        const std::string&,
+        std::size_t start,
+        std::size_t stop,
+        Color
+    ) override;
     void move_cursor(int pos) override;
     void scroll_line() override;
     void finish() override;
@@ -37,6 +43,12 @@ CursesTerminal::CursesTerminal()
     ::noecho();
     ::keypad(stdscr, true);
     ::scrollok(stdscr, true);
+    ::start_color();
+
+    ::init_pair(Color::WHITE, COLOR_WHITE, COLOR_BLACK);
+    ::init_pair(Color::RED, COLOR_RED, COLOR_BLACK);
+    ::init_pair(Color::GREEN, COLOR_GREEN, COLOR_BLACK);
+    ::init_pair(Color::BLUE, COLOR_BLUE, COLOR_BLACK);
 }
 
 CursesTerminal::~CursesTerminal() {
@@ -70,8 +82,20 @@ void CursesTerminal::clear_line() {
 }
 
 void CursesTerminal::print(const std::string& str) {
-    ::printw("%s", str.c_str());
+    ::wattron(stdscr, COLOR_PAIR(Color::WHITE));
+    ::waddnstr(stdscr, str.c_str(), -1);
 }
+
+void CursesTerminal::print(
+    const std::string& text,
+    std::size_t start,
+    std::size_t stop,
+    Color color
+) {
+    ::wattron(stdscr, COLOR_PAIR(color));
+    ::waddnstr(stdscr, text.c_str() + start, stop-start);
+}
+
 
 void CursesTerminal::move_cursor(int pos) {
     ::wmove(stdscr, _line, pos);

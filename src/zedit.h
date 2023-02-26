@@ -1,20 +1,19 @@
 /// \file zedit.h
 /// \author masscry
-
 #pragma once
-#include <sstream>
-#ifndef ZEDIT_HEADER
-#define ZEDIT_HEADER
 
 #include <cstddef>
 
 #include <memory>
 #include <stdexcept>
+#include <sstream>
 #include <vector>
 
 namespace zedit {
 
 typedef std::unique_ptr<class ITerminal> UPTerminal;
+
+typedef std::unique_ptr<class IFormatter> UPFormatter;
 
 typedef std::unique_ptr<class Engine> UPEngine;
 
@@ -27,6 +26,13 @@ enum SpecialKey {
     BACKSPACE, ///< Remove character before cursor
     DELETE, ///< Remove character under cursor
     ENTER ///< Accept input
+};
+
+enum Color {
+    WHITE = 1,
+    RED = 2,
+    GREEN = 3,
+    BLUE = 4,
 };
 
 /// \brief User input events
@@ -51,28 +57,46 @@ class ITerminal {
 public:
 
     ITerminal();
-    virtual ~ITerminal() = 0;
+    
+    virtual
+    ~ITerminal() = 0;
 
     /// \brief Get last user input event.
-    virtual Event get() = 0;
+    virtual 
+    Event get() = 0;
 
     /// \brief Clear terminal.
-    virtual void clear_line() = 0;
+    virtual 
+    void clear_line() = 0;
 
-    /// \brief Print given text at cursor posiiton
-    virtual void print(const std::string&) = 0;
+    /// \brief Print given text at cursor position
+    virtual 
+    void print(const std::string&) = 0;
+
+    /// \brief Print given text at cursor position from start to stop with color
+    virtual 
+    void print(
+        const std::string&,
+        std::size_t start,
+        std::size_t stop, 
+        Color
+    ) = 0;
 
     /// \brief Move cursor to given position
-    virtual void move_cursor(int) = 0;
+    virtual
+    void move_cursor(int) = 0;
 
     /// \brief Scroll line up
-    virtual void scroll_line() = 0;
+    virtual
+    void scroll_line() = 0;
 
     /// \brief Do some action at end of read-write loop.
-    virtual void finish() = 0;
+    virtual
+    void finish() = 0;
 
     /// \brief Returns default terminal for given platform.
-    static UPTerminal default_terminal();
+    static 
+    UPTerminal default_terminal();
 
 private:
     ITerminal(const ITerminal&) /* = delete */;
@@ -80,6 +104,39 @@ private:
     ITerminal(ITerminal&&) /* = delete */;
     ITerminal& operator=(ITerminal&&) /* = delete */;
 };
+
+struct Token {
+    enum Type {
+        END = 0,
+        WHITE,
+        RED,
+        GREEN,
+        BLUE,
+    } type;
+    std::size_t first;
+    std::size_t last;
+};
+
+class IFormatter {
+public:
+    IFormatter();
+
+    virtual 
+    ~IFormatter() = 0;
+
+    virtual 
+    void add_string(const std::string& text) = 0;
+    
+    virtual 
+    Token get_token() = 0;
+
+private:
+    IFormatter(const IFormatter&) /* = delete */;
+    IFormatter& operator=(const IFormatter&) /* = delete */;
+    IFormatter(IFormatter&&) /* = delete */;
+    IFormatter& operator=(IFormatter&&) /* = delete */;
+};
+
 
 /// \brief Console line edit engine.
 class Engine {
@@ -90,7 +147,7 @@ public:
         NEW_INPUT = 1
     };
 
-    Engine(const char* welcome, UPTerminal&& terminal);
+    Engine(const char* welcome, UPTerminal&& terminal, UPFormatter&& formatter);
 
     ~Engine();
 
@@ -124,6 +181,7 @@ private:
     Engine& operator=(Engine&&) /* = delete */;
 
     UPTerminal _terminal;
+    UPFormatter _formatter;
     std::string _welcome;
     std::string _ready;
     std::string _edit;
@@ -143,5 +201,3 @@ inline
 Error::Error(std::string&& text): std::runtime_error(std::move(text)) { ; }
 
 } // namespace zedit
-
-#endif /* ZEDIT_HEADER */

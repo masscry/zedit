@@ -1,13 +1,21 @@
+#include <algorithm>
+#include <cstddef>
 #include <cstdlib>
-#include <zedit.h>
+#include <sstream>
 
-enum CustomKeys {
-    ENTER = '\n'
-};
+#include <zedit.h>
+#include <zdict.h>
 
 int main(int, char*[]) {
+    std::unordered_set<std::string> dict {
+        "exit"
+    };
 
-    zedit::Engine engine("zcmd> ", zedit::ITerminal::default_terminal());
+    zedit::Engine engine(
+        "zcmd> ",
+        zedit::ITerminal::default_terminal(),
+        std::make_unique<zedit::BasicDictFormatter>(std::move(dict))
+    );
 
     while(true) {
         auto status = engine.process_input();

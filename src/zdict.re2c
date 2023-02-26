@@ -1,0 +1,115 @@
+#include "zdict.h"
+
+/*!max:re2c*/
+
+/*!re2c re2c:define:YYCTYPE = "char"; */
+
+namespace zedit {
+
+BasicDictFormatter::BasicDictFormatter(std::unordered_set<std::string>&& dict)
+    : _cursor(nullptr)
+    , _marker(nullptr)
+    , _token(nullptr)
+    , _dict(std::move(dict))
+{ ; }
+
+BasicDictFormatter::~BasicDictFormatter() { ; }
+
+void BasicDictFormatter::add_word(const std::string& word) {
+	_dict.emplace(word);
+}
+
+void BasicDictFormatter::add_string(const std::string& text) {
+    _text = text;
+    _cursor = _text.c_str();
+}
+
+zedit::Token BasicDictFormatter::get_token() {
+    for(;;) {
+        _token = _cursor;
+    /*!re2c
+        re2c:yyfill:enable = 0;
+        re2c:define:YYCURSOR = _cursor;
+        re2c:define:YYMARKER = _marker;
+
+        end = "\x00";
+
+        id = [a-zA-Z_][a-zA-Z_0-9]*;
+
+        * {
+            return zedit::Token {
+                zedit::Token::RED,
+                static_cast<std::size_t>(_token - _text.c_str()),
+                static_cast<std::size_t>(_cursor - _text.c_str())
+            };
+        }
+        end {
+            return zedit::Token {
+                zedit::Token::END,
+                0, 0
+            };
+        }
+
+        wsp = ([ \t\v\n\r])+;
+        wsp { 
+            return zedit::Token {
+                zedit::Token::WHITE,
+                static_cast<std::size_t>(_token - _text.c_str()),
+                static_cast<std::size_t>(_cursor - _text.c_str())
+            };
+        }
+
+        // integer literals
+        oct = "0" [0-7]*;
+        dec = [1-9][0-9]*;
+        hex = '0x' [0-9a-fA-F]+;
+
+        oct {
+            return zedit::Token {
+                zedit::Token::BLUE,
+                static_cast<std::size_t>(_token - _text.c_str()),
+                static_cast<std::size_t>(_cursor - _text.c_str())
+            };
+        }
+        dec {
+            return zedit::Token {
+                zedit::Token::BLUE,
+                static_cast<std::size_t>(_token - _text.c_str()),
+                static_cast<std::size_t>(_cursor - _text.c_str())
+            };
+        }
+        hex {
+            return zedit::Token {
+                zedit::Token::BLUE,
+                static_cast<std::size_t>(_token - _text.c_str()),
+                static_cast<std::size_t>(_cursor - _text.c_str())
+            };
+        }
+
+        // floating literals
+        frc = [0-9]* "." [0-9]+ | [0-9]+ ".";
+        exp = 'e' [+-]? [0-9]+;
+        flt = (frc exp? | [0-9]+ exp);
+        flt {
+            return zedit::Token {
+                zedit::Token::BLUE,
+                static_cast<std::size_t>(_token - _text.c_str()),
+                static_cast<std::size_t>(_cursor - _text.c_str())
+            };
+        }
+
+        id    {
+            auto name = std::string(_token, _cursor - _token);
+            return zedit::Token {
+                (_dict.find(name) != _dict.end())
+                    ? zedit::Token::GREEN
+                    : zedit::Token::RED,
+                static_cast<std::size_t>(_token - _text.c_str()),
+                static_cast<std::size_t>(_cursor - _text.c_str())
+            };
+        }
+    */
+    }
+}
+
+} // namespace zedit

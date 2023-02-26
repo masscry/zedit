@@ -31,14 +31,36 @@ int clamp(int value, int minVal, int maxVal) {
             : value;
 }
 
+Color convert(Token::Type type) {
+    switch (type) {
+    case Token::RED:
+        return Color::RED;
+    case Token::GREEN:
+        return Color::GREEN;
+    case Token::BLUE:
+        return Color::BLUE;
+    default:
+        return Color::WHITE;
+    }
+}
+
 } // namespace
 
 ITerminal::ITerminal() { ; }
 
 ITerminal::~ITerminal() { ; }
 
-Engine::Engine(const char* welcome, UPTerminal&& terminal) 
+IFormatter::IFormatter() { ; }
+
+IFormatter::~IFormatter() { ; }
+
+Engine::Engine(
+    const char* welcome,
+    UPTerminal&& terminal, 
+    UPFormatter&& formatter
+) 
     : _terminal(std::move(terminal))
+    , _formatter(std::move(formatter))
     , _welcome(welcome)
     , _cursor_pos(0)
     , _history_pos(0) { }
@@ -59,11 +81,25 @@ Engine::Status Engine::process_input() {
         _terminal->scroll_line();
     }
 
-    auto cur_line = current();
-
     _terminal->move_cursor(0);
     _terminal->clear_line();
-    _terminal->print(cur_line);
+    if (_formatter) {
+        _terminal->print(_welcome, 0, _welcome.size(), Color::WHITE);
+        _formatter->add_string(_edit);
+        auto token = _formatter->get_token();
+        while (token.type != Token::END) {
+            _terminal->print(
+                _edit,
+                token.first,
+                token.last,
+                convert(token.type)
+            );
+            token = _formatter->get_token();
+        }
+    } else {
+        auto cur_line = current();
+        _terminal->print(cur_line);
+    }
 
     auto smb = _terminal->get();
     auto finish_terminal = make_deferred([this](){
@@ -82,9 +118,11 @@ Engine::Status Engine::process_input() {
         assert(0);
         throw Error("Unknown event type");
     }
+
     if (status == Engine::Status::NEW_INPUT) {
         _terminal->scroll_line();
     }
+
     return status;
 }
 

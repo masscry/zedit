@@ -7,6 +7,8 @@ project(zedit
     LANGUAGES CXX
 )
 
+add_subdirectory(3rdparty)
+
 add_library(setup INTERFACE)
 
 target_compile_features(setup
@@ -23,11 +25,14 @@ target_compile_options(setup
         $<$<CXX_COMPILER_ID:Clang>:-fcolor-diagnostics>
 )
 
+add_re2c_target(src/zdict.re2c ${CMAKE_CURRENT_SOURCE_DIR}/src/zdict.gen.cpp)
+
 add_library(zedit)
 
 target_sources(zedit
     PRIVATE
         src/zedit.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/zdict.gen.cpp
         src/ncurses/terminal.cpp
 )
 

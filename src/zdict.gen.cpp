@@ -106,20 +106,20 @@ zedit::Token BasicDictFormatter::get_token() {
 yy1:
 	++_cursor;
 	{
-            return zedit::Token {
+            return zedit::Token (
                 zedit::Token::END,
                 0, 0
-            };
+            );
         }
 yy2:
 	++_cursor;
 yy3:
 	{
-            return zedit::Token {
+            return zedit::Token (
                 zedit::Token::RED,
                 static_cast<std::size_t>(_token - _text.c_str()),
                 static_cast<std::size_t>(_cursor - _text.c_str())
-            };
+            );
         }
 yy4:
 	yych = *++_cursor;
@@ -133,11 +133,11 @@ yy4:
 	}
 yy5:
 	{ 
-            return zedit::Token {
+            return zedit::Token (
                 zedit::Token::WHITE,
                 static_cast<std::size_t>(_token - _text.c_str()),
                 static_cast<std::size_t>(_cursor - _text.c_str())
-            };
+            );
         }
 yy6:
 	yych = *++_cursor;
@@ -164,11 +164,11 @@ yy7:
 	}
 yy8:
 	{
-            return zedit::Token {
+            return zedit::Token (
                 zedit::Token::BLUE,
                 static_cast<std::size_t>(_token - _text.c_str()),
                 static_cast<std::size_t>(_cursor - _text.c_str())
-            };
+            );
         }
 yy9:
 	yyaccept = 1;
@@ -191,11 +191,11 @@ yy9:
 	}
 yy10:
 	{
-            return zedit::Token {
+            return zedit::Token (
                 zedit::Token::BLUE,
                 static_cast<std::size_t>(_token - _text.c_str()),
                 static_cast<std::size_t>(_cursor - _text.c_str())
-            };
+            );
         }
 yy11:
 	yych = *++_cursor;
@@ -268,13 +268,13 @@ yy11:
 yy12:
 	{
             auto name = std::string(_token, _cursor - _token);
-            return zedit::Token {
+            return zedit::Token (
                 (_dict.find(name) != _dict.end())
                     ? zedit::Token::GREEN
                     : zedit::Token::RED,
                 static_cast<std::size_t>(_token - _text.c_str()),
                 static_cast<std::size_t>(_cursor - _text.c_str())
-            };
+            );
         }
 yy13:
 	yyaccept = 2;
@@ -296,11 +296,11 @@ yy13:
 	}
 yy14:
 	{
-            return zedit::Token {
+            return zedit::Token (
                 zedit::Token::BLUE,
                 static_cast<std::size_t>(_token - _text.c_str()),
                 static_cast<std::size_t>(_cursor - _text.c_str())
-            };
+            );
         }
 yy15:
 	yyaccept = 0;
@@ -450,11 +450,11 @@ yy23:
 	}
 yy24:
 	{
-            return zedit::Token {
+            return zedit::Token (
                 zedit::Token::BLUE,
                 static_cast<std::size_t>(_token - _text.c_str()),
                 static_cast<std::size_t>(_cursor - _text.c_str())
-            };
+            );
         }
 }
 

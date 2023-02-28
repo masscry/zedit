@@ -115,6 +115,28 @@ struct Token {
     } type;
     std::size_t first;
     std::size_t last;
+
+    Token(Type type, std::size_t first, std::size_t last)
+        : type(type)
+        , first(first)
+        , last(last)
+    { ; }
+
+    Token(const Token& src)
+        : type(src.type)
+        , first(src.first)
+        , last(src.last)
+    { ; }
+
+    Token& operator=(const Token& src){
+        type = src.type;
+        first = src.first;
+        last = src.last;
+        return *this;
+    }
+
+    ~Token() { ; }
+
 };
 
 class IFormatter {
